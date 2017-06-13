@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtrack clean detailed expanded list
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.myjetbrains.com/youtrack/issues*
@@ -20,6 +20,9 @@
   var $searchInput = $('.searchQueryText')
   var $projectSelect = $('.selectProject input')
 
+  var wikiReg = /``|--|[=|\{\}\[\]!#*>'"]/
+  var issueUrl = document.location.origin + '/youtrack/rest/issue/'
+
   $('<style>').appendTo('head').html(styles)
 
   // $('.jt-menu').append('<li class="expanded-detailLevelLink"><a href="javascript:void(0)">Expanded view</a></li>')
@@ -37,11 +40,20 @@
     })
   })
 
+
+  function getDescription (issue) {
+    var description = issue.field.filter(function(field) {
+      return field.name === 'description'
+    })[0]
+
+    return description && description.value || ''
+  }
+
   function getList (callback) {
 
     var currentProject = $projectSelect.val().match(/\((.*)\)$/)[1]
 
-    var filter = $searchInput.val() || '#' + currentProject + ' order by: updated'
+    var filter = '#' + currentProject + ' ' + ($searchInput.val() || 'order by: updated')
     var after = 0
     var parameters = document.location.search.match(/p=(\d+)/)
     if (parameters && parameters[1]) {
@@ -51,7 +63,7 @@
     $.ajax({
       dataType: 'json',
       type: 'get',
-      url: document.location.origin + '/youtrack/rest/issue',
+      url: issueUrl,
       data: {
         filter: filter,
         max: 100,
@@ -67,13 +79,27 @@
           if (!$issue.length) { return }
 
 
-          var description = issue.field.filter(function (field) {
-            return field.name === 'description'
-          })[0]
+          var description = getDescription(issue)
 
           if (!description) { return }
 
-          $issue.find('.description').text(description.value)
+          if (wikiReg.test(description)) {
+            return $.ajax({
+              dataType: 'json',
+              type: 'get',
+              url: issueUrl + issue.id,
+              data: {
+                wikifyDescription: true
+              },
+              success: function (data) {
+                var description = getDescription(data)
+                $issue.find('.description').html(description)
+              }
+
+            })
+          }
+
+          $issue.find('.description').text(description)
         })
 
         callback()
