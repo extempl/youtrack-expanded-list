@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtrack clean detailed expanded list
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.myjetbrains.com/youtrack/issues*
@@ -73,7 +73,7 @@
 
           if (!description) { return }
 
-          $issue.find('.description').html(description.value)
+          $issue.find('.description').text(description.value)
         })
 
         callback()
