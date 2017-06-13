@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtrack clean detailed expanded list
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.myjetbrains.com/youtrack/issues*
@@ -42,6 +42,11 @@
     var currentProject = $projectSelect.val().match(/\((.*)\)$/)[1]
 
     var filter = $searchInput.val() || '#' + currentProject + ' order by: updated'
+    var after = 0
+    var parameters = document.location.search.match(/p=(\d+)/)
+    if (parameters && parameters[1]) {
+      after = parameters[1]
+    }
 
     $.ajax({
       dataType: 'json',
@@ -49,7 +54,8 @@
       url: document.location.origin + '/youtrack/rest/issue',
       data: {
         filter: filter,
-        max: 500 // TODO pagination: after parameter
+        max: 100,
+        after: after
       },
       success: function (data) {
         var issues = data.issue
