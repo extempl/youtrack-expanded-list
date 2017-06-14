@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtrack clean detailed expanded list
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  try to take over the world!
 // @author       You
 // @match        https://*.myjetbrains.com/youtrack/issues*
@@ -14,6 +14,28 @@
   var styles = " \
   .clean-detailed-expanded-list .issueContainer .description {\
     white-space: pre-wrap;\
+  }\
+  \
+  @media print {\
+  \
+    .ring-header-react,\
+    .issues-sidebar,\
+    .dtbl,\
+    .issues-toolbar,\
+    .issue-controls-wrp, \
+    .issue-last-update, \
+    .footer-placeholder {\
+      display: none;\
+    }\
+    \
+    .issues-center {\
+      margin-left: 0;\
+    }\
+    \
+    .issueContainer {\
+      padding: 20px;\
+      page-break-inside: avoid;\
+    }\
   }\
   "
 
